@@ -24,6 +24,61 @@ class Feedback
   end
 end
 
+class Messages
+  def self.add(name)
+    return "Added #{name} to stage."
+  end
+  def self.remove_object(name, success)
+    return "Added #{name} for removal." if success
+    "Object #{name} is not committed."
+  end
+  def self.commit(message = nil, count = nil, success)
+    return "#{message}" + "\n\t#{count} objects changed" if success
+    "Nothing to commit, working directory clean."
+  end
+
+  def self.checkout(commit_hash, success)
+    return "HEAD is now at #{commit_hash}." if success
+    "Commit #{commit_hash} does not exist."
+  end
+
+  def self.log(branch, success)
+    return "Branch #{branch.name} does not have any commits yet." if ! success
+     success = branch.commits.map do |commit|
+      "Commit #{ commit.hash }\nDate: " \
+      "#{ commit.date_s}\n\n\t#{ commit.message }"
+    end
+    success = success.reverse.join("\n\n")
+    success
+  end
+
+  def self.get(name, success)
+    return "Found object #{ name }." if success
+    "Object #{ name } is not committed."
+  end
+
+  def self.head(branch, success)
+   return "#{ branch.commits.last.message }" if success
+   "Branch #{ branch.name } does not have any commits yet."
+  end
+
+  def self.branch_new(name, success)
+    return "Created branch #{ name }." if success
+    "Branch #{ name } already exists."
+  end
+
+  def self.branch_checkout(name, success)
+    return "Switched to branch #{ name }." if success
+    "Branch #{ name } does not exist."
+  end
+
+  def self.branch_remove(name, status)
+    return "Removed branch #{ name }." if status == 0
+    return "Cannot remove current branch." if status == 1
+    return "Branch #{ name } does not exist." if status == 2
+  end
+end
+
 class ObjectStore
   attr_accessor :stage, :deleted, :branches, :current_branch
 
