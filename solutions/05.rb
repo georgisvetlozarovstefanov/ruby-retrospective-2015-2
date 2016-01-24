@@ -184,45 +184,38 @@ class Branch
   end
 
   def create(name)
-    success = "Created branch #{ name }."
-    error = "Branch #{ name } already exists."
-
     name_taken = has_branch?(name)
+    return Feedback.new(Messages.branch_new(name, false), false) if name_taken
 
-    branch_out = Branch.new(name, repository) unless name_taken
-    branch_out.commits = commits.dup unless name_taken
-    repository.branches << branch_out unless name_taken
+    branch_out = Branch.new(name, repository)
+    branch_out.commits = commits.dup
+    repository.branches << branch_out
 
-    name_taken ? Feedback.new(error, false) :
-                 Feedback.new(success, true)
+    Feedback.new(Messages.branch_new(name, true), true)
   end
 
   def checkout(name)
-    success = "Switched to branch #{ name }."
-    error = "Branch #{ name } does not exist."
-
     new_current = nil
     repository.branches.each do |branch|
       new_current = branch if branch.name == name
     end
     repository.current_branch = new_current if new_current
 
-    new_current ? Feedback.new(success, true) : Feedback.new(error, false)
+    new_current ? Feedback.new(Messages.branch_checkout(name, true), true) :
+                  Feedback.new(Messages.branch_checkout(name, false), false)
   end
 
   def remove(name)
-    success = "Removed branch #{ name }."
-    error_current = "Cannot remove current branch."
-    no_branch = "Branch #{ name } does not exist."
-
     is_current = name == repository.branch.name
-    no_problem = (has_branch?(name) and not is_current)
 
-    repository.branches.keep_if { |branch| branch.name != name } if no_problem
+    return Feedback.new(Messages.branch_remove(name, 1), false) if is_current
 
-    no_problem ? Feedback.new(success, true) :
-                 is_current ? Feedback.new(error_current, false) :
-                              Feedback.new(no_branch, false)
+    if not has_branch?(name)
+      return Feedback.new(Messages.branch_remove(name, 2), false)
+    else
+      repository.branches.keep_if { |branch| branch.name != name }
+      return Feedback.new(Messages.branch_remove(name, 0), true)
+    end
   end
 
   def list
@@ -230,14 +223,12 @@ class Branch
     sorted = named.sort!
 
     sorted.
-    map! { |name| name == repository.branch.name ? " *" + name : "  " + name }
+    map! { |name| name == repository.branch.name ? "* " + name : "  " + name }
     message = sorted.join("\n")
 
     Feedback.new("#{ message }", true)
   end
-
 end
-
 class Commit
   attr_accessor :state, :message
 
