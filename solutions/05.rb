@@ -47,37 +47,37 @@ class Messages
   def self.log(branch, success)
     return "Branch #{branch.name} does not have any commits yet." if ! success
      success = branch.commits.map do |commit|
-      "Commit #{ commit.hash }\nDate: " \
-      "#{ commit.date_s}\n\n\t#{ commit.message }"
+      "Commit #{commit.hash}\nDate: " \
+      "#{commit.date_s}\n\n\t#{commit.message}"
     end
     success = success.reverse.join("\n\n")
     success
   end
 
   def self.get(name, success)
-    return "Found object #{ name }." if success
-    "Object #{ name } is not committed."
+    return "Found object #{name}." if success
+    "Object #{name} is not committed."
   end
 
   def self.head(branch, success)
-   return "#{ branch.commits.last.message }" if success
-   "Branch #{ branch.name } does not have any commits yet."
+   return "#{branch.commits.last.message}" if success
+   "Branch #{branch.name} does not have any commits yet."
   end
 
   def self.branch_new(name, success)
-    return "Created branch #{ name }." if success
-    "Branch #{ name } already exists."
+    return "Created branch #{name}." if success
+    "Branch #{name} already exists."
   end
 
   def self.branch_checkout(name, success)
-    return "Switched to branch #{ name }." if success
-    "Branch #{ name } does not exist."
+    return "Switched to branch #{name}." if success
+    "Branch #{name} does not exist."
   end
 
   def self.branch_remove(name, status)
-    return "Removed branch #{ name }." if status == 0
+    return "Removed branch #{name}." if status == 0
     return "Cannot remove current branch." if status == 1
-    return "Branch #{ name } does not exist." if status == 2
+    return "Branch #{name} does not exist." if status == 2
   end
 end
 
@@ -228,7 +228,7 @@ class Branch
     map! { |name| name == repository.branch.name ? "* " + name : "  " + name }
     message = sorted.join("\n")
 
-    Feedback.new("#{ message }", true)
+    Feedback.new("#{message}", true)
   end
 end
 

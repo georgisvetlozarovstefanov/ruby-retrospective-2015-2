@@ -104,8 +104,8 @@ class TurtleGraphics
       end
 
       def combine_rows(array, max_opacity)
-        array.map { |row| paint_row(row, max_opacity)}
-             .map { |row| row.join("\n")}
+        array.map { |row| paint_row(row, max_opacity) }
+             .map { |row| row.join("\n") }
              .join("\n\t</tr>\n\t<tr>\n")
       end
 
