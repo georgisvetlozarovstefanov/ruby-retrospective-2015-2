@@ -1,15 +1,21 @@
 class Spreadsheet
   attr_accessor :grid, :cells
   def initialize(grid = nil)
-    @grid = ""
-    @grid = Spreadsheet.cells(grid) if grid
+    return initialize_empty if grid == nil
+    @grid = Spreadsheet.cells(grid)
     @cells = @grid.flatten.each_with_index.
-                   map { |cell, index| Cell.new(cell, index, self) } if grid
-    @cells.each {|cell| cell.sheet = self} if grid
+                   map { |cell, index| Cell.new(cell, index, self) }
+    @cells.each {|cell| cell.sheet = self}
+  end
+
+  def initialize_empty
+    @grid = ""
+    @cells = []
+    @grid
   end
 
   def empty?
-    @grid.empty?
+    @grid.size == 0
   end
 
   def cell_at(cell_index)
@@ -36,6 +42,7 @@ class Spreadsheet
   end
 
   def to_s
+    return @grid if @grid == ""
     sheet = @cells.map { |cell| cell.evaluate }
     sheet = sheet.each_slice(@grid[0].size).to_a
     sheet.map! { |row| row.join("\t") }
@@ -72,7 +79,7 @@ class Spreadsheet
     end
 
     def self.valid_index?(string)
-       string.match(/\A[A-Z]+[1-9]+\z/) != nil
+       string.match(/\A[A-Z]+[1-9]+[0-9]*\z/) != nil
     end
 
     def initialize(number, rows, columns)
@@ -81,7 +88,7 @@ class Spreadsheet
     end
   end
 
-  class Expressions
+class Expressions
     attr_accessor :cell, :sheet, :expression
     def initialize(expression, cell)
       @cell = cell
@@ -119,8 +126,8 @@ class Spreadsheet
                      find { |formula| formula == find_key }
     end
     def arguments
-      arguments = expression.split(/[()]/)[1].strip
-      arguments
+      arguments = expression.split(/[()]/)[1]
+      arguments = arguments == nil ? "" : arguments.strip
     end
     def find_key
       key = expression.match(/[A-Z]+[0-9]+/).to_s if is_cell?
@@ -129,7 +136,6 @@ class Spreadsheet
                                                and is_valid?
       key
     end
-
   end
 
   class Cell
