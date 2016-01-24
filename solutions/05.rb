@@ -230,20 +230,21 @@ class Branch
   end
 end
 class Commit
-  attr_accessor :state, :message
+  attr_accessor :state, :message, :hash
 
   def initialize(state, message)
     @state = state
     @message = message
     @date = Time.now
+    @hash = Digest::SHA1.hexdigest(date_s + message)
   end
 
   def date
-    @date.strftime('%a %b %-d %H:%M %Y %z')
+    @date
   end
 
-  def hash
-    Digest::SHA1.hexdigest(date.to_s + message)
+  def date_s
+    @date.strftime('%a %b %-d %H:%M %Y %z')
   end
 
   def objects
