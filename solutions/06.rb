@@ -96,7 +96,7 @@ class TurtleGraphics
       end
 
       def brush(number, max_opacity)
-        number.fdiv(max_opacity).round(2)
+        format('%.2f', number.fdiv(max_opacity))
       end
 
       def paint_row(row, max_opacity)
@@ -112,7 +112,7 @@ class TurtleGraphics
       def paint(array, max_opacity)
         message = combine_rows(array, max_opacity)
 
-        print @head + @@body_start + "#{message}" + @@body_end
+        @head + @@body_start + "#{message}" + @@body_end
       end
     end
   end
