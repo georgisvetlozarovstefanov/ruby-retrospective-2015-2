@@ -82,7 +82,7 @@ end
 class ObjectStore
   attr_accessor :stage, :deleted, :branches, :current_branch
 
- def self.init(&block)
+  def self.init(&block)
     repository, repository.stage, repository.deleted = self.new, {}, {}
     master_branch = Branch.new("master", repository)
 
@@ -95,9 +95,8 @@ class ObjectStore
 
   def add(name, object)
     stage[name] = object
-    message = "Added #{name} to stage."
 
-    Feedback.new(message, true, object)
+    Feedback.new(Messages.add(name), true, object)
   end
 
   def has_commits?
@@ -106,47 +105,44 @@ class ObjectStore
 
 
   def remove(name)
-    error = "Object #{name} is not committed."
-    success = "Added #{name} for removal."
-
     object = current_branch.commits.last.state[name] if has_commits?
     object = nil unless has_commits?
     deleted[name] = object if object
 
 
-    object ? Feedback.new(success, true, object) :
-             Feedback.new(error, false)
+    object ? Feedback.new(Messages.remove_object(name, true), true, object) :
+             Feedback.new(Messages.remove_object(name, false), false)
   end
 
+  def new_state
+     state = {}.merge(stage).reject { |name| deleted.has_key?(name) }
+
+     state = branch.commits.last.state.merge(stage).
+             reject { |name| deleted.has_key?(name) } if has_commits?
+     state
+  end
   def commit(message)
     changed, count = (stage.any? or deleted.any?), stage.merge(deleted).size
-    error = "Nothing to commit, working directory clean."
-    success = "#{message}" + "\n\t#{count} objects changed."
-
-    new_state = {}.merge(stage).reject { |name| deleted.has_key?(name) }
-
-    new_state = branch.commits.last.state.merge(stage).
-                reject { |name| deleted.has_key?(name) } if has_commits?
+    return Feedback.new(Messages.commit(false), false) if not changed
 
     result = Commit.new(new_state, message)
-    current_branch.commits.push(result) if changed
+    current_branch.commits.push(result)
 
     @stage, @deleted = {}, {}
-    changed ? Feedback.new(success, true, result) : Feedback.new(error, false)
+    Feedback.new(Messages.commit(message, count, true), true, result)
   end
 
   def checkout(commit_hash)
-    error = "Commit #{commit_hash} does not exist."
-    success = "HEAD is now at #{commit_hash}."
-
     hash_values = branch.commits.map { |commit| commit.hash }
-    has_hash = hash_values.include?(commit_hash)
+    last_commit = hash_values.find_index(commit_hash)
 
-    last_commit = hash_values.find_index(commit_hash) if has_hash
-    branch.commits.slice!(last_commit + 1...branch.commits.size) if has_hash
+    if not last_commit
+      return Feedback.new(Messages.checkout(commit_hash, false), false)
+    end
+    branch.commits = branch.commits[0..last_commit]
     result = branch.commits.last
 
-    has_hash ? Feedback.new(success, true, result) : Feedback.new(error, false)
+    Feedback.new(Messages.checkout(commit_hash, true), true, result)
   end
 
   def branch
@@ -154,37 +150,24 @@ class ObjectStore
   end
 
   def log
-    error = "Branch #{branch.name} does not have any commits yet."
-
-    success = branch.commits.map do |commit|
-      "Commit #{ commit.hash }\nDate: " \
-      "#{ commit.date }\n\n\t#{ commit.message }"
-    end
-    success = success.reverse.join("\n\n")
-
-    has_commits? ? Feedback.new(success, true) : Feedback.new(error, false)
+    return Feedback.new(Messages.log(branch, false), false) if not has_commits?
+    Feedback.new(Messages.log(branch, true), true)
   end
 
   def get(name)
-    error = "Object #{ name } is not committed."
-    success = "Found object #{ name }."
+    return Feedback.new(Messages.get(name, false), false) if not has_commits?
+    result = branch.commits.last.state[name]
+    is_committed = branch.commits.last.state.has_key?(name)
 
-    result = branch.commits.last.state[name] if has_commits?
-    is_committed = branch.commits.last.state.has_key?(name) if has_commits?
-
-    (has_commits? and is_committed) ? Feedback.new(success, true, result) :
-                                      Feedback.new(error, false)
+    is_committed ? Feedback.new(Messages.get(name, true), true, result) :
+                   Feedback.new(Messages.get(name, false), false)
   end
 
   def head
-    error = "Branch #{ branch.name } does not have any commits yet."
-    success = "#{ branch.commits.last.message }" if has_commits?
-    result = branch.commits.last if has_commits?
-
-    has_commits? ? Feedback.new(success, true, result) :
-                   Feedback.new(error, false)
+    return Feedback. new(Messages.head(branch, false), false) if ! has_commits?
+    result = branch.commits.last
+    Feedback.new(Messages.head(branch,true), true, result)
   end
-
 end
 
 class Branch
