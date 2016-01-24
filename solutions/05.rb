@@ -1,5 +1,4 @@
 require 'digest/sha1'
-
 class Feedback
   attr_accessor :message
 
@@ -7,6 +6,9 @@ class Feedback
     @message = message
     @success = success
     @result = result
+  end
+  def message
+    @message
   end
 
   def success?
@@ -229,6 +231,7 @@ class Branch
     Feedback.new("#{ message }", true)
   end
 end
+
 class Commit
   attr_accessor :state, :message, :hash
 
