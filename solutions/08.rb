@@ -165,31 +165,31 @@ class Spreadsheet
     @@names = ["ADD", "MULTIPLY", "SUBTRACT", "DIVIDE", "MOD"]
     attr_accessor :sheet, :arguments
     def add
-      ErrorMessages.add if arguments.size < 2
+      ErrorMessages.add(arguments) if arguments.size < 2
       sum = arguments.map { |argument| argument.to_f }.reduce(:+)
       Formula.beautify(sum)
     end
 
     def multiply
-      ErrorMessages.multiply if arguments.size < 2
+      ErrorMessages.multiply(arguments) if arguments.size < 2
       product = arguments.map { |argument| argument.to_f }.reduce(:*)
       Formula.beautify(product)
     end
 
     def subtract
-      ErrorMessages.subtract if arguments.size != 2
+      ErrorMessages.subtract(arguments) if arguments.size != 2
       difference = arguments[0].to_f - arguments[1].to_f
       Formula.beautify(difference)
     end
 
     def divide
-      ErrorMessages.divide if arguments.size != 2
+      ErrorMessages.divide(arguments) if arguments.size != 2
       ratio = arguments[0].to_f / arguments[1].to_f
       Formula.beautify(ratio)
     end
 
     def mod
-      ErrorMessages.mod if arguments.size != 2
+      ErrorMessages.mod(arguments) if arguments.size != 2
       remainder = arguments[0].to_f % arguments[1].to_f
       Formula.beautify(remainder)
     end
