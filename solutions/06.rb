@@ -1,9 +1,9 @@
 class TurtleGraphics
   class TurtleGraphics::Turtle
-    MOVEMENT = { :right => [1, 0],
+    @@movement = { :right => [1, 0],
                    :up => [0, -1],
                    :left => [-1, 0],
-                   :down => [0, 1] }
+                   :down => [0, +1] }
 
     attr_accessor :canvas, :position, :orientation, :max_opacity
 
@@ -21,9 +21,9 @@ class TurtleGraphics
     end
 
     def move
-      @position[1] += MOVEMENT[orientation][0]
+      @position[1] += @@movement[orientation][0]
       @position[1] %= canvas[0].size
-      @position[0] += MOVEMENT[orientation][1]
+      @position[0] += @@movement[orientation][1]
       @position[0] %= canvas.size
       @canvas[position[0]][position[1]] += 1
       @max_opacity += 1 if max_opacity < canvas[position[0]][position[1]]
@@ -79,10 +79,10 @@ class TurtleGraphics
     class TurtleGraphics::Canvas::HTML
       attr_accessor :pixel_size
 
-      TD = "\t\s\s<td style=\"opacity: "
-      TD_END = "\"></td>"
-      BODY_START = "\n<body>\n\s\s<table>\n\t<tr>\n"
-      BODY_END = "\n\t</tr>\n\s\s</table>\n</body>\n</html>"
+      @@td = "\t\s\s<td style=\"opacity: "
+      @@td_end = "\"></td>"
+      @@body_start = "\n<body>\n\s\s<table>\n\t<tr>\n"
+      @@body_end = "\n\t</tr>\n\s\s</table>\n</body>\n</html>"
 
       def initialize(pixel_size)
         @pixel_size = pixel_size
@@ -100,7 +100,7 @@ class TurtleGraphics
       end
 
       def paint_row(row, max_opacity)
-        row.map { |number| TD + "#{brush(number, max_opacity)}" + TD_END }
+        row.map { |number| @@td + "#{brush(number, max_opacity)}" + @@td_end }
       end
 
       def combine_rows(array, max_opacity)
@@ -112,7 +112,7 @@ class TurtleGraphics
       def paint(array, max_opacity)
         message = combine_rows(array, max_opacity)
 
-        @head + BODY_START + "#{message}" + BODY_END
+        @head + @@body_start + "#{message}" + @@body_end
       end
     end
   end

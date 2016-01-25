@@ -166,7 +166,7 @@ class ObjectStore
   end
 
   def head
-    return Feedback.new(Messages.head(branch, false), false) if ! has_commits?
+    return Feedback. new(Messages.head(branch, false), false) if ! has_commits?
     result = branch.commits.last
     Feedback.new(Messages.head(branch,true), true, result)
   end
