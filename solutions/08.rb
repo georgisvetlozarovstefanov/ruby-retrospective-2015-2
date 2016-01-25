@@ -88,7 +88,7 @@ class Spreadsheet
     end
   end
 
-class Expressions
+  class Expressions
     attr_accessor :cell, :sheet, :expression
     def initialize(expression, cell)
       @cell = cell
@@ -161,46 +161,35 @@ class Expressions
     end
   end
 
-
   class Formula
     @@names = ["ADD", "MULTIPLY", "SUBTRACT", "DIVIDE", "MOD"]
     attr_accessor :sheet, :arguments
     def add
-      raise Error, "Wrong number of arguments for 'ADD': " \
-                   "expected at least 2, got #{arguments.size}" \
-                    if arguments.size < 2
+      ErrorMessages.add if arguments.size < 2
       sum = arguments.map { |argument| argument.to_f }.reduce(:+)
       Formula.beautify(sum)
     end
 
     def multiply
-      raise Error, "Wrong number of arguments for 'MULTIPLY': " \
-                   "expected at least 2, got #{arguments.size}" \
-                    if arguments.size < 2
+      ErrorMessages.multiply if arguments.size < 2
       product = arguments.map { |argument| argument.to_f }.reduce(:*)
       Formula.beautify(product)
     end
 
     def subtract
-      raise Error, "Wrong number of arguments for 'SUBTRACT': " \
-                   "expected 2, got #{arguments.size}" \
-                    if arguments.size != 2
+      ErrorMessages.subtract if arguments.size != 2
       difference = arguments[0].to_f - arguments[1].to_f
       Formula.beautify(difference)
     end
 
     def divide
-     raise Error, "Wrong number of arguments for 'DIVIDE': " \
-                  "expected 2, got #{arguments.size}" \
-                  if arguments.size != 2
+      ErrorMessages.divide if arguments.size != 2
       ratio = arguments[0].to_f / arguments[1].to_f
       Formula.beautify(ratio)
     end
 
     def mod
-      raise Error, "Wrong number of arguments for 'MOD'" \
-                   ": expected 2, got #{arguments.size}" \
-                    if arguments.size != 2
+      ErrorMessages.mod if arguments.size != 2
       remainder = arguments[0].to_f % arguments[1].to_f
       Formula.beautify(remainder)
     end
@@ -225,6 +214,34 @@ class Expressions
       is_number = Index.is_number?(output)
 
       is_number ? Formula.beautify(output.to_f) : output
+    end
+  end
+
+  class ErrorMessages
+    def self.add(arguments)
+      raise Error, "Wrong number of arguments for 'ADD': " \
+                   "expected at least 2, got #{arguments.size}"
+    end
+
+    def self.multiply(arguments)
+      raise Error, "Wrong number of arguments for 'MULTIPLY': " \
+                   "expected at least 2, got #{arguments.size}"
+
+    end
+
+    def self.subtract(arguments)
+      raise Error, "Wrong number of arguments for 'SUBTRACT': " \
+                   "expected 2, got #{arguments.size}"
+    end
+
+    def self.divide(arguments)
+      raise Error, "Wrong number of arguments for 'DIVIDE': " \
+                   "expected 2, got #{arguments.size}"
+    end
+
+    def self.mod(arguments)
+      raise Error, "Wrong number of arguments for 'MOD'" \
+                   ": expected 2, got #{arguments.size}"
     end
   end
 end

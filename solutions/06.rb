@@ -17,7 +17,7 @@ class TurtleGraphics
 
     def draw(palette = nil, &block)
       instance_eval(&block) if block_given?
-      palette.class == NilClass ? canvas : palette.paint(canvas, max_opacity)
+      palette == nil ? canvas : palette.paint(canvas, max_opacity)
     end
 
     def move

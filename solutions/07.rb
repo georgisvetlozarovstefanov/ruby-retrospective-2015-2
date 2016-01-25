@@ -8,7 +8,7 @@ class LazyMode
 
 
   class Date
-    @@period_table = {"d" => 1, "w" => 7, "m" => 30}
+    PERIOD_TABLE = {"d" => 1, "w" => 7, "m" => 30}
 
     attr_accessor :year, :month, :day
 
@@ -43,7 +43,7 @@ class LazyMode
       jump = @repetition.scan(/\d*/).join("").to_i
       type = @repetition.match(/[dwm]/).to_s
 
-      jump * @@period_table[type]
+      jump * PERIOD_TABLE[type]
     end
 
     def to_days
