@@ -19,19 +19,17 @@ class Spreadsheet
   end
 
   def cell_at(cell_index)
-    raise  Error, "Invalid cell index '#{cell_index}'" \
-                  if not Index.valid_index?(cell_index)
+    ErrorMessages.invalid(cell_index) if not Index.valid_index?(cell_index)
     cell = @cells.find { |target| target.index_string == cell_index }
-    raise Error, "Cell '#{cell_index}' does not exist" if cell == nil
-    cell.content if cell
+    ErrorMessages.inexistant(cell_index) if cell == nil
+    cell.content
   end
 
   def [](cell_index)
-    raise  Error, "Invalid cell index '#{cell_index}'" \
-                   if not Index.valid_index?(cell_index)
+    ErrorMessages.invalid(cell_index) if not Index.valid_index?(cell_index)
     cell = @cells.find { |target| target.index_string == cell_index }
-    raise Error, "Cell '#{cell_index}' does not exist" if cell == nil
-    Formula.beautify_s(cell.evaluate) if cell
+    ErrorMessages.inexistant(cell_index) if cell == nil
+    Formula.beautify_s(cell.evaluate)
   end
 
   def self.cells(grid)
@@ -99,8 +97,8 @@ class Spreadsheet
     def evaluate
       return Formula.beautify_s(cell.sheet[find_key]) if is_cell?
       return Formula.beautify(find_key.to_f) if is_number?
-      raise Error, "Invalid expression '#{expression}'"  if not is_valid?
-      raise Error, "Unknown function '#{find_key}'"  if formula? == nil
+      ErrorMessages.expression(expression)  if not is_valid?
+      ErrorMessages.function(find_key) if formula? == nil
       Formula.new(sheet, arguments).method(formula?.downcase).call
     end
 
@@ -111,6 +109,7 @@ class Spreadsheet
     def is_number?
       expression =~ (/\A *[-]?\d+(\.\d+)?\Z/)
     end
+
     def is_valid?
       (expression.match(%r{\A\ *[A-Z]+\ *\(\ *(([-]?\d+(\.\d+)?)|
                        ([A-Z]+[0-9]+))?\ *\)\z}x) != nil) || \
@@ -122,13 +121,14 @@ class Spreadsheet
 
 
     def formula?
-      name = Formula.class_eval("@@names").
-                     find { |formula| formula == find_key }
+      name = Formula::NAMES.find { |formula| formula == find_key }
     end
+
     def arguments
       arguments = expression.split(/[()]/)[1]
       arguments = arguments == nil ? "" : arguments.strip
     end
+
     def find_key
       key = expression.match(/[A-Z]+[0-9]+/).to_s if is_cell?
       key = expression.match(/[-]?\d+(\.\d+)?/).to_s if is_number?
@@ -162,7 +162,7 @@ class Spreadsheet
   end
 
   class Formula
-    @@names = ["ADD", "MULTIPLY", "SUBTRACT", "DIVIDE", "MOD"]
+    NAMES = ["ADD", "MULTIPLY", "SUBTRACT", "DIVIDE", "MOD"]
     attr_accessor :sheet, :arguments
     def add
       ErrorMessages.add(arguments) if arguments.size < 2
@@ -217,31 +217,50 @@ class Spreadsheet
     end
   end
 
-  class ErrorMessages
-    def self.add(arguments)
+  module FormulaErrors
+    def add(arguments)
       raise Error, "Wrong number of arguments for 'ADD': " \
                    "expected at least 2, got #{arguments.size}"
     end
 
-    def self.multiply(arguments)
+    def multiply(arguments)
       raise Error, "Wrong number of arguments for 'MULTIPLY': " \
                    "expected at least 2, got #{arguments.size}"
 
     end
 
-    def self.subtract(arguments)
+    def subtract(arguments)
       raise Error, "Wrong number of arguments for 'SUBTRACT': " \
                    "expected 2, got #{arguments.size}"
     end
 
-    def self.divide(arguments)
+    def divide(arguments)
       raise Error, "Wrong number of arguments for 'DIVIDE': " \
                    "expected 2, got #{arguments.size}"
     end
 
-    def self.mod(arguments)
+    def mod(arguments)
       raise Error, "Wrong number of arguments for 'MOD'" \
                    ": expected 2, got #{arguments.size}"
+    end
+  end
+
+  class ErrorMessages
+    extend FormulaErrors
+    def self.invalid(cell_index)
+      raise  Error, "Invalid cell index '#{cell_index}'"
+    end
+
+    def self.inexistant(cell_index)
+      raise Error, "Cell '#{cell_index}' does not exist"
+    end
+
+    def self.expression(expression)
+      raise Error, "Invalid expression '#{expression}'"
+    end
+
+    def self.function(function)
+      raise Error, "Unknown function '#{function}'"
     end
   end
 end
