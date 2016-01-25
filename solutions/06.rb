@@ -71,8 +71,8 @@ class TurtleGraphics
       end
 
       def paint(array, max_opacity)
-        array.map { |row| row.map { |number| brush(number, max_opacity) } }
-             .map { |x| x.join("") }.join("\n")
+        array.map { |row| row.map { |number| brush(number, max_opacity) } }.
+              map { |x| x.join("") }.join("\n")
       end
     end
 
@@ -104,9 +104,9 @@ class TurtleGraphics
       end
 
       def combine_rows(array, max_opacity)
-        array.map { |row| paint_row(row, max_opacity) }
-             .map { |row| row.join("\n") }
-             .join("\n\t</tr>\n\t<tr>\n")
+        array.map { |row| paint_row(row, max_opacity) }.
+              map { |row| row.join("\n") }.
+              join("\n\t</tr>\n\t<tr>\n")
       end
 
       def paint(array, max_opacity)

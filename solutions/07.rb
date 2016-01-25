@@ -51,9 +51,9 @@ class LazyMode
     end
 
     def within_week(date)
-      occurs_on = [0,1,2,3,4,5,6].map { |day| date.to_days + day }
-                                 .map{ |days| Date.to_date(days) }
-                                 .delete_if { |date| !(self === date) }
+      occurs_on = [0,1,2,3,4,5,6].map { |day| date.to_days + day }.
+                                  map{ |days| Date.to_date(days) }.
+                                  delete_if { |date| !(self === date) }
       occurs_on
     end
   end
